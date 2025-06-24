@@ -2,7 +2,8 @@
 import importlib.util
 from typing import List
 
-from pyctuator.metrics.async_metrics_provider import AsyncMetricsProvider, Metric, Measurement
+from pyctuator.metrics.async_metrics_provider import AsyncMetricsProvider
+from pyctuator.metrics.metrics_provider import Metric, Measurement
 
 PREFIX = "thread."
 THREAD_COUNT = PREFIX + "count"

@@ -1,33 +1,8 @@
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
 
-from typing import List, Optional
+from typing import List
 
-
-@dataclass
-class MetricNames:
-    names: List[str]
-
-
-@dataclass
-class Measurement:
-    statistic: str  # one of TOTAL, TOTAL_TIME, COUNT, MAX, VALUE, UNKNOWN, ACTIVE_TASKS, DURATION
-    value: float  # can be an int as well
-
-
-@dataclass
-class MetricTag:
-    tag: str
-    values: List[str]
-
-
-@dataclass
-class Metric:
-    name: str
-    description: Optional[str]
-    baseUnit: str
-    measurements: List[Measurement]
-    availableTags: List[MetricTag]
+from pyctuator.metrics.metrics_provider import Metric, MetricNames, Measurement, MetricTag
 
 
 class AsyncMetricsProvider(ABC):

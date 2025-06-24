@@ -1,21 +1,8 @@
 # pylint: disable=import-outside-toplevel
 import importlib.util
-from dataclasses import dataclass
 
-from pyctuator.health.async_health_provider import AsyncHealthProvider, HealthDetails, HealthStatus, Status
-
-
-@dataclass
-class AsyncDiskSpaceHealthDetails(HealthDetails):
-    total: int
-    free: int
-    threshold: int
-
-
-@dataclass
-class AsyncDiskSpaceHealth(HealthStatus):
-    status: Status
-    details: AsyncDiskSpaceHealthDetails
+from pyctuator.health.async_health_provider import AsyncHealthProvider, Status
+from pyctuator.health.diskspace_health_impl import DiskSpaceHealthDetails, DiskSpaceHealth
 
 
 class AsyncDiskSpaceHealthProvider(AsyncHealthProvider):
@@ -36,9 +23,9 @@ class AsyncDiskSpaceHealthProvider(AsyncHealthProvider):
     def get_name(self) -> str:
         return "diskSpace"
 
-    async def get_health(self) -> AsyncDiskSpaceHealth:
+    async def get_health(self) -> DiskSpaceHealth:
         usage = self.psutil.disk_usage(".")
-        return AsyncDiskSpaceHealth(
+        return DiskSpaceHealth(
             Status.UP if usage.free > self.free_bytes_down_threshold else Status.DOWN,
-            AsyncDiskSpaceHealthDetails(usage.total, usage.free, self.free_bytes_down_threshold)
+            DiskSpaceHealthDetails(usage.total, usage.free, self.free_bytes_down_threshold)
         ) 

@@ -11,14 +11,14 @@ from starlette.requests import Request
 from starlette.responses import Response
 
 from pyctuator.endpoints import Endpoints
-from pyctuator.environment.async_environment_provider import EnvironmentData
+from pyctuator.environment.environment_provider import EnvironmentData
 from pyctuator.httptrace import TraceRecord, TraceRequest, TraceResponse
 from pyctuator.httptrace.http_tracer import Traces
 from pyctuator.impl import SBA_V2_CONTENT_TYPE
 from pyctuator.impl.async_pyctuator_impl import AsyncPyctuatorImpl
 from pyctuator.impl.pyctuator_router import PyctuatorRouter
 from pyctuator.logging.pyctuator_logging import LoggersData, LoggerLevels
-from pyctuator.metrics.async_metrics_provider import Metric, MetricNames
+from pyctuator.metrics.metrics_provider import Metric, MetricNames
 from pyctuator.threads.thread_dump_provider import ThreadDump
 
 

@@ -1,52 +1,20 @@
 import dataclasses
-from dataclasses import dataclass
-from datetime import datetime
 from typing import List, Dict, Mapping, Optional, Callable
 from urllib.parse import urlparse
 
 from pyctuator.endpoints import Endpoints
-from pyctuator.environment.async_environment_provider import EnvironmentData, AsyncEnvironmentProvider
+from pyctuator.environment.async_environment_provider import AsyncEnvironmentProvider
+from pyctuator.environment.environment_provider import EnvironmentData
 from pyctuator.environment.scrubber import SecretScrubber
-from pyctuator.health.async_health_provider import HealthStatus, HealthSummary, Status, AsyncHealthProvider
+from pyctuator.health.async_health_provider import AsyncHealthProvider
+from pyctuator.health.health_provider import HealthStatus, HealthSummary, Status
 from pyctuator.httptrace.http_tracer import HttpTracer
 from pyctuator.logfile.logfile import PyctuatorLogfile  # type: ignore
 from pyctuator.logging.pyctuator_logging import PyctuatorLogging
-from pyctuator.metrics.async_metrics_provider import Metric, MetricNames, AsyncMetricsProvider
+from pyctuator.metrics.async_metrics_provider import AsyncMetricsProvider
+from pyctuator.metrics.metrics_provider import Metric, MetricNames
 from pyctuator.threads.thread_dump_provider import ThreadDump, ThreadDumpProvider
-
-
-@dataclass
-class GitCommitInfo:
-    time: datetime
-    id: str
-
-
-@dataclass
-class GitInfo:
-    commit: GitCommitInfo
-    branch: Optional[str] = None
-
-
-@dataclass
-class BuildInfo:
-    name: Optional[str] = None
-    artifact: Optional[str] = None
-    group: Optional[str] = None
-    version: Optional[str] = None
-    time: Optional[datetime] = None
-
-
-@dataclass
-class AppDetails:
-    name: str
-    description: Optional[str] = None
-
-
-@dataclass
-class AppInfo:
-    app: AppDetails
-    build: Optional[BuildInfo] = None
-    git: Optional[GitInfo] = None
+from pyctuator.impl.pyctuator_impl import GitCommitInfo, GitInfo, BuildInfo, AppDetails, AppInfo
 
 
 class AsyncPyctuatorImpl:

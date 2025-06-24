@@ -4,9 +4,12 @@ from typing import List
 from unittest.mock import AsyncMock, MagicMock
 
 from pyctuator.async_pyctuator import AsyncPyctuator
-from pyctuator.health.async_health_provider import AsyncHealthProvider, HealthStatus, Status, HealthDetails
-from pyctuator.metrics.async_metrics_provider import AsyncMetricsProvider, Metric, Measurement
-from pyctuator.environment.async_environment_provider import AsyncEnvironmentProvider, PropertiesSource, PropertyValue
+from pyctuator.health.async_health_provider import AsyncHealthProvider
+from pyctuator.health.health_provider import HealthStatus, Status, HealthDetails
+from pyctuator.metrics.async_metrics_provider import AsyncMetricsProvider
+from pyctuator.metrics.metrics_provider import Metric, Measurement
+from pyctuator.environment.async_environment_provider import AsyncEnvironmentProvider
+from pyctuator.environment.environment_provider import PropertiesSource, PropertyValue
 
 
 class MockAsyncHealthProvider(AsyncHealthProvider):
@@ -94,7 +97,8 @@ async def test_async_environment_provider():
 @pytest.mark.asyncio
 async def test_async_db_health_provider():
     """Test that AsyncDbHealthProvider works correctly with dialect-specific queries"""
-    from pyctuator.health.async_db_health_provider import AsyncDbHealthProvider, AsyncDbHealthStatus, AsyncDbHealthDetails
+    from pyctuator.health.async_db_health_provider import AsyncDbHealthProvider
+    from pyctuator.health.db_health_provider import DbHealthStatus, DbHealthDetails
     from sqlalchemy.ext.asyncio import create_async_engine
     
     # Create an in-memory SQLite async engine for testing
@@ -107,8 +111,8 @@ async def test_async_db_health_provider():
     
     # Test health check
     health = await provider.get_health()
-    assert isinstance(health, AsyncDbHealthStatus)
-    assert isinstance(health.details, AsyncDbHealthDetails)
+    assert isinstance(health, DbHealthStatus)
+    assert isinstance(health.details, DbHealthDetails)
     assert health.status == Status.UP
     assert health.details.engine == "sqlite"
     assert health.details.failure is None

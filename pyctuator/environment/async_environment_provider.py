@@ -1,25 +1,8 @@
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
 
-from typing import Mapping, Optional, List, Any, Callable, Dict
+from typing import Callable, Dict
 
-
-@dataclass
-class PropertyValue:
-    value: Any
-    origin: Optional[str] = None
-
-
-@dataclass
-class PropertiesSource:
-    name: str
-    properties: Mapping[str, PropertyValue]
-
-
-@dataclass
-class EnvironmentData:
-    activeProfiles: List[str]
-    propertySources: List[PropertiesSource]
+from pyctuator.environment.environment_provider import PropertyValue, PropertiesSource, EnvironmentData
 
 
 class AsyncEnvironmentProvider(ABC):
