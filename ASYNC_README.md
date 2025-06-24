@@ -10,9 +10,25 @@ The async implementation provides the same functionality as the original sync Py
 
 - **Full Async Support**: All health checks, metrics collection, and environment monitoring are async
 - **Async Database Integration**: Native support for async SQLAlchemy engines and connections
-- **FastAPI Integration**: Seamless integration with FastAPI applications
+- **Multi-Framework Support**: FastAPI, aiohttp, and Tornado integration
 - **Non-blocking Operations**: All monitoring operations are non-blocking
 - **Backward Compatibility**: Maintains the same API structure as the sync version
+
+## Framework Support
+
+### Supported Async Frameworks
+
+1. **FastAPI** - Full async support with async endpoints
+2. **aiohttp** - Native async web framework integration
+3. **Tornado** - Async web framework with async handlers
+
+### Why No Async Flask?
+
+Flask is inherently synchronous and doesn't need an async version because:
+- Flask uses WSGI (Web Server Gateway Interface) which is synchronous by design
+- Flask applications run in a synchronous context
+- The existing sync Pyctuator works perfectly with Flask
+- Adding async to Flask would require significant architectural changes
 
 ## Architecture
 
@@ -70,8 +86,10 @@ async_pyctuator = AsyncPyctuator(
 #### AsyncPyctuatorImpl
 The core implementation that manages async providers and handles async operations.
 
-#### AsyncFastApiPyctuator
-FastAPI-specific integration that provides async endpoints.
+#### Framework-Specific Integrations
+- **AsyncFastApiPyctuator** - FastAPI-specific integration
+- **AsyncAioHttpPyctuator** - aiohttp-specific integration  
+- **AsyncTornadoHttpPyctuator** - Tornado-specific integration
 
 ## Built-in Async Providers
 
@@ -163,6 +181,79 @@ async def root():
 async def shutdown():
     await async_engine.dispose()
     async_pyctuator.stop()
+```
+
+### aiohttp Application with Async Database
+
+```python
+from aiohttp import web
+from sqlalchemy.ext.asyncio import create_async_engine
+from pyctuator.async_pyctuator import AsyncPyctuator
+from pyctuator.health.async_db_health_provider import AsyncDbHealthProvider
+
+# Create async database engine
+async_engine = create_async_engine("sqlite+aiosqlite:///./app.db")
+
+# Create aiohttp app
+app = web.Application()
+
+# Initialize AsyncPyctuator
+async_pyctuator = AsyncPyctuator(
+    app=app,
+    app_name="Async aiohttp App",
+    app_url="http://localhost:8080",
+    pyctuator_endpoint_url="http://localhost:8080/pyctuator",
+    registration_url="http://localhost:8081"
+)
+
+# Register async database health provider
+db_health = AsyncDbHealthProvider(engine=async_engine, name="async_db")
+async_pyctuator.register_health_provider(db_health)
+
+async def root_handler(request):
+    return web.json_response({"message": "Hello World"})
+
+app.router.add_get("/", root_handler)
+
+async def cleanup(app):
+    await async_engine.dispose()
+    async_pyctuator.stop()
+
+app.on_cleanup.append(cleanup)
+```
+
+### Tornado Application with Async Database
+
+```python
+from tornado.web import Application, RequestHandler
+from sqlalchemy.ext.asyncio import create_async_engine
+from pyctuator.async_pyctuator import AsyncPyctuator
+from pyctuator.health.async_db_health_provider import AsyncDbHealthProvider
+
+# Create async database engine
+async_engine = create_async_engine("sqlite+aiosqlite:///./app.db")
+
+# Create Tornado app
+app = Application()
+
+# Initialize AsyncPyctuator
+async_pyctuator = AsyncPyctuator(
+    app=app,
+    app_name="Async Tornado App",
+    app_url="http://localhost:8888",
+    pyctuator_endpoint_url="http://localhost:8888/pyctuator",
+    registration_url="http://localhost:8081"
+)
+
+# Register async database health provider
+db_health = AsyncDbHealthProvider(engine=async_engine, name="async_db")
+async_pyctuator.register_health_provider(db_health)
+
+class RootHandler(RequestHandler):
+    def get(self):
+        self.write({"message": "Hello World"})
+
+app.add_handlers(r".*", [(r"/", RootHandler)])
 ```
 
 ### Custom Async Health Provider
@@ -318,12 +409,14 @@ async_engine = create_async_engine("postgresql+asyncpg://user:pass@localhost/db"
 3. **Modern Python**: Leverages Python's async/await features
 4. **Database Integration**: Native support for async database operations
 5. **Resource Efficiency**: Better resource utilization with async I/O
+6. **Framework Flexibility**: Support for multiple async frameworks
 
 ## Limitations
 
-1. **Framework Support**: Currently only supports FastAPI (other frameworks can be added)
+1. **Framework Support**: Only supports async frameworks (FastAPI, aiohttp, Tornado)
 2. **Provider Compatibility**: Sync providers cannot be used with AsyncPyctuator
 3. **Learning Curve**: Requires understanding of async/await patterns
+4. **Flask Limitation**: Flask applications should continue using the sync Pyctuator
 
 ## Testing
 
@@ -335,7 +428,10 @@ pytest tests/test_async_pyctuator.py -v
 
 ## Examples
 
-See the `examples/FastAPI/async_fastapi_example_app.py` for a complete working example.
+See the examples directory for complete working examples:
+- `examples/FastAPI/async_fastapi_example_app.py` - FastAPI example
+- `examples/aiohttp/async_aiohttp_example_app.py` - aiohttp example
+- `examples/tornado/async_tornado_example_app.py` - Tornado example
 
 ## Contributing
 
@@ -348,8 +444,8 @@ When adding new async providers or features:
 
 ## Future Enhancements
 
-- Support for other async web frameworks (aiohttp, Starlette, etc.)
 - Async Redis health provider
 - Async HTTP client health provider
 - Async cache health provider
-- Performance monitoring and profiling 
+- Performance monitoring and profiling
+- Support for additional async frameworks if needed 

@@ -48,15 +48,17 @@ class AsyncPyctuator:
             customizer: Optional[Callable] = None,
             disabled_endpoints: Endpoints = Endpoints.NONE,
     ) -> None:
-        """The async entry point for integrating pyctuator with web-frameworks such as FastAPI.
+        """The async entry point for integrating pyctuator with web-frameworks such as FastAPI, aiohttp, and Tornado.
 
         Given an application built on top of a supported web-framework, it'll add to the application the REST API
          endpoints that required for Spring Boot Admin to monitor and manage the application.
 
-        AsyncPyctuator currently supports applications built on top of FastAPI. The type of first argument, app is
-         specific to the target web-framework:
-
+        AsyncPyctuator currently supports applications built on top of:
         * FastAPI - `app` is an instance of `fastapi.applications.FastAPI`
+        * aiohttp - `app` is an instance of `aiohttp.web.Application`
+        * Tornado - `app` is an instance of `tornado.web.Application`
+
+        Note: Flask is inherently synchronous and doesn't need an async version.
 
         :param app: an instance of a supported web-framework with which the pyctuator endpoints will be registered
         :param app_name: the application's name that will be presented in the "Info" section in boot-admin
@@ -120,6 +122,8 @@ class AsyncPyctuator:
         # Find and initialize an integration layer between the web-framework and pyctuator
         framework_integrations: Dict[str, Callable[[Any, AsyncPyctuatorImpl, Optional[Callable], Endpoints], bool]] = {
             "fastapi": self._integrate_fastapi,
+            "aiohttp": self._integrate_aiohttp,
+            "tornado": self._integrate_tornado,
         }
         for framework_name, framework_integration_function in framework_integrations.items():
             if self._is_framework_installed(framework_name):
@@ -208,6 +212,56 @@ class AsyncPyctuator:
                     pyctuator_impl,
                     include_in_openapi_schema=True,
                     customizer=customizer,
+                    disabled_endpoints=disabled_endpoints,
+                )
+                return True
+        except ImportError:
+            pass
+        return False
+
+    def _integrate_aiohttp(
+            self,
+            app: Any,
+            pyctuator_impl: AsyncPyctuatorImpl,
+            customizer: Optional[Callable],
+            disabled_endpoints: Endpoints,
+    ) -> bool:
+        """
+        This method should only be called if we detected that aiohttp is installed.
+        """
+        try:
+            from aiohttp import web
+            from pyctuator.impl.async_aiohttp_pyctuator import AsyncAioHttpPyctuator
+
+            if isinstance(app, web.Application):
+                AsyncAioHttpPyctuator(
+                    app,
+                    pyctuator_impl,
+                    disabled_endpoints=disabled_endpoints,
+                )
+                return True
+        except ImportError:
+            pass
+        return False
+
+    def _integrate_tornado(
+            self,
+            app: Any,
+            pyctuator_impl: AsyncPyctuatorImpl,
+            customizer: Optional[Callable],
+            disabled_endpoints: Endpoints,
+    ) -> bool:
+        """
+        This method should only be called if we detected that Tornado is installed.
+        """
+        try:
+            from tornado.web import Application
+            from pyctuator.impl.async_tornado_pyctuator import AsyncTornadoHttpPyctuator
+
+            if isinstance(app, Application):
+                AsyncTornadoHttpPyctuator(
+                    app,
+                    pyctuator_impl,
                     disabled_endpoints=disabled_endpoints,
                 )
                 return True
