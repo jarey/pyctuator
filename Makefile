@@ -1,4 +1,3 @@
-
 all: check
 
 help:
@@ -7,6 +6,7 @@ help:
 	@echo "- bootstrap              Installs required dependencies"
 	@echo "- check                  Runs static code analyzers"
 	@echo "- test                   Run unit tests"
+	@echo "- test-async             Run async unit tests"
 	@echo "- coverage               Check test coverage"
 
 bootstrap:
@@ -17,6 +17,9 @@ check: pylint mypy
 
 test:
 	poetry run pytest --log-cli-level=4 -vv tests
+
+test-async:
+	poetry run pytest --log-cli-level=4 -vv tests/test_async_pyctuator.py
 
 coverage:
 	poetry run pytest --cov-append --cov-report xml:./coverage.xml --cov-report html --cov-report term --cov=pyctuator --log-cli-level=4 -vv tests
@@ -37,4 +40,4 @@ clean:
 	find  . -type d -name .pytest_cache -print | xargs rm -rf
 	rm -rf dist htmlcov .mypy_cache
 
-.PHONY: all help bootstrap check test coverage pylint mypy package clean
+.PHONY: all help bootstrap check test test-async coverage pylint mypy package clean

@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "async-fastapi-pyctuator-example"
+version = "1.0.0"
+description = "Async FastAPI application with Pyctuator monitoring"
+authors = ["Your Name <your.email@example.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+fastapi = "^0.104.0"
+uvicorn = {extras = ["standard"], version = "^0.24.0"}
+sqlalchemy = "^2.0.0"
+aiosqlite = "^0.19.0"
+pyctuator = {path = "../../", develop = true}
+
+[tool.poetry.dev-dependencies]
+pytest = "^7.0.0"
+pytest-asyncio = "^0.21.0"
+httpx = "^0.25.0"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api" 
