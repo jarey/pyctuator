@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from typing import Optional
 
 from sqlalchemy.ext.asyncio import AsyncEngine
+from sqlalchemy import text
 
 from pyctuator.health.async_health_provider import AsyncHealthProvider, HealthStatus, Status, HealthDetails
 
@@ -35,8 +36,10 @@ class AsyncDbHealthProvider(AsyncHealthProvider):
     async def get_health(self) -> AsyncDbHealthStatus:
         try:
             async with self.engine.begin() as conn:
-                # For async engines, we can use a simple query to test connectivity
-                await conn.execute("SELECT 1")
+                # Use the dialect-specific select one query for compatibility
+                # This is equivalent to what do_ping() uses in the sync version
+                dialect_specific_query = self.engine.sync_engine.dialect._dialect_specific_select_one
+                await conn.execute(text(dialect_specific_query))
                 return AsyncDbHealthStatus(
                     status=Status.UP,
                     details=AsyncDbHealthDetails(self.engine.name)

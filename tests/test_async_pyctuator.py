@@ -92,6 +92,34 @@ async def test_async_environment_provider():
 
 
 @pytest.mark.asyncio
+async def test_async_db_health_provider():
+    """Test that AsyncDbHealthProvider works correctly with dialect-specific queries"""
+    from pyctuator.health.async_db_health_provider import AsyncDbHealthProvider, AsyncDbHealthStatus, AsyncDbHealthDetails
+    from sqlalchemy.ext.asyncio import create_async_engine
+    
+    # Create an in-memory SQLite async engine for testing
+    engine = create_async_engine("sqlite+aiosqlite:///:memory:")
+    
+    provider = AsyncDbHealthProvider(engine=engine, name="test_db")
+    
+    assert provider.is_supported() is True
+    assert provider.get_name() == "test_db"
+    
+    # Test health check
+    health = await provider.get_health()
+    assert isinstance(health, AsyncDbHealthStatus)
+    assert isinstance(health.details, AsyncDbHealthDetails)
+    assert health.status == Status.UP
+    assert health.details.engine == "sqlite"
+    assert health.details.failure is None
+    
+    # Verify it uses the dialect-specific select one query
+    assert hasattr(engine.sync_engine.dialect, '_dialect_specific_select_one')
+    dialect_query = engine.sync_engine.dialect._dialect_specific_select_one
+    assert dialect_query == "SELECT 1"  # For SQLite
+
+
+@pytest.mark.asyncio
 async def test_async_pyctuator_impl_health():
     """Test that AsyncPyctuatorImpl correctly handles async health providers"""
     from pyctuator.impl.async_pyctuator_impl import AsyncPyctuatorImpl, AppInfo, AppDetails
