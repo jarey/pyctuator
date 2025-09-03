@@ -19,6 +19,9 @@ from uvicorn.main import Server
 
 from pyctuator.endpoints import Endpoints
 
+# Configure pytest-asyncio
+pytest_plugins = ["pytest_asyncio"]
+
 REQUEST_TIMEOUT = 10
 
 
